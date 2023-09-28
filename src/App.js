@@ -13,7 +13,33 @@ function App() {
   
   function sendImage(e){
     e.preventDefault();
-   
+    setVisitorName(image.name);
+    setUploadResultMessage(`Working ${image.name}`)
+
+    const visitorImageName = uuid.v4();
+    fetch(`https://42bt4wcvl8.execute-api.us-east-2.amazonaws.com/dev/analyze-people-data/${visitorImageName}.jpg`,{
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'image/jpg',
+    },
+    body: image}).then( async () => {
+      setUploadResultMessage(`Done uploading ${image.name}`)
+      const reponse = await authenticate(visitorImageName)
+    setUploadResultMessage(`done authenicating ${image.name}`)
+    console.debug(reponse)
+    if (reponse.Message === 'Success'){
+      setAuth(true)
+      setUploadResultMessage(`File Keys ${reponse['key']}`)
+      }else {
+        setUploadResultMessage(reponse.Message)
+        setUploadResultMessage("FAIL!")
+        setAuth(false)
+      }
+    }).catch(error => {
+      setAuth(false);
+      setUploadResultMessage('There is an error during the authentication proces.')
+      console.error(error);
+    })   
   }
 
   async function authenticate(visitorImageName) {
